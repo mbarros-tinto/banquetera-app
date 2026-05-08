@@ -212,21 +212,9 @@
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-box">
-        <div class="card">
-            <img src="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1765987524/Logo_Blanco_y_dorado_png_mbekud.png" alt="Grupo Pioneros">
-            <h1>Dashboard Grupo Pioneros</h1>
-            <p>Sistema de gestión integral</p>
-            <input type="password" id="passwordInput" class="password-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')verifyPassword()">
-            <div class="error-message" id="errorMessage">Contraseña incorrecta</div>
-            <button class="btn btn-primary" onclick="verifyPassword()">Ingresar</button>
-        </div>
-    </div>
-
     <div class="container">
         <!-- Dashboard -->
-        <div id="dashboardMain" class="dashboard-content">
+        <div id="dashboardMain" class="dashboard-content" style="display:block">
             <div class="top-bar">
                 <div class="header">
                     <img src="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1765987524/Logo_Blanco_y_dorado_png_mbekud.png" alt="Grupo Pioneros">
@@ -235,7 +223,6 @@
                         <p>Sistema de gestión integral</p>
                     </div>
                 </div>
-                <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
             </div>
             <div class="sections-grid">
                 <div class="section-card eventos" onclick="showEventsSection()">
@@ -300,46 +287,13 @@
     </div>
 
     <script>
-        const PASSWORD = 'tinto1234';
-        let isLoggedIn = false;
-
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('passwordInput').focus();
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeModal();
             });
         });
 
-        function verifyPassword() {
-            const inputPassword = document.getElementById('passwordInput').value;
-            if (inputPassword === PASSWORD) {
-                isLoggedIn = true;
-                document.getElementById('errorMessage').style.display = 'none';
-                showDashboard();
-            } else {
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboardMain').style.display = 'block';
-            document.getElementById('eventsSection').style.display = 'none';
-        }
-
-        function logout() {
-            isLoggedIn = false;
-            document.getElementById('dashboardMain').style.display = 'none';
-            document.getElementById('eventsSection').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordInput').focus();
-        }
-
         function showEventsSection() {
-            if (!isLoggedIn) return;
             document.getElementById('dashboardMain').style.display = 'none';
             document.getElementById('eventsSection').style.display = 'block';
             displayEvents();
@@ -351,32 +305,26 @@
         }
 
         function openPhotosLink() {
-            if (!isLoggedIn) return;
             window.open('https://script.google.com/macros/s/AKfycbxvmJwrz1F6aq9k8353xMNh2EMfgpU8PXAh7aeeDfV1LDeo75Wb8JP32tbZIWV47_YY/exec', '_blank');
         }
 
         function openGestionLink() {
-            if (!isLoggedIn) return;
             window.open('https://script.google.com/macros/s/AKfycbxkQ8F2eQrFgilLka9n3if7U7q3JJtcL_ZAfkCkWrN-87xJevC4XL9GyQ7uJG6RtnBT/exec', '_blank');
         }
 
         function openInscripcionLink() {
-            if (!isLoggedIn) return;
             window.open('https://inscripcion.tintobanqueteria.cl/', '_blank');
         }
 
         function openTintoLink() {
-            if (!isLoggedIn) return;
             window.open('https://wiki.tintobanqueteria.cl', '_blank');
         }
 
         function openSeptimaLink() {
-            if (!isLoggedIn) return;
             window.open('https://script.google.com/macros/s/AKfycbw3-GSJGKZuaKriPj0yep9YsxdxhEpgTbhqqcC5b3KcbJhjrjIyQl7ib6_IdZXlu_G4/exec', '_blank');
         }
 
         function openOctavaLink() {
-            if (!isLoggedIn) return;
             window.open('https://script.google.com/macros/s/AKfycbyNclipyovERXAgRQhb188-5OWzbId-5zruBtk4R6B4KwVTxDqfzLGmYBisJSsgpWWEmQ/exec', '_blank');
         }
         // Complete event data with all documents and roles
