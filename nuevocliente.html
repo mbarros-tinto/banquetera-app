@@ -68,6 +68,17 @@
         .field.has-error textarea{border-color:#e74c3c}
         .field.has-error .err{display:block}
 
+        /* Label con boton inline (toggle 2do correo) */
+        .label-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+        .inline-toggle{
+            background:none;border:none;color:#c89b3c;cursor:pointer;
+            font-size:.78em;font-weight:600;padding:0;
+            font-family:inherit;
+        }
+        .inline-toggle:hover{text-decoration:underline}
+        .inline-toggle.remove{color:#999}
+        .inline-toggle.remove:hover{color:#e74c3c}
+
         .actions{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
         .btn{
             padding:12px 22px;border:none;border-radius:8px;cursor:pointer;
@@ -162,7 +173,10 @@
                         </div>
 
                         <div class="field">
-                            <label for="email">Email <span class="req">*</span></label>
+                            <div class="label-row">
+                                <label for="email">Email <span class="req">*</span></label>
+                                <button type="button" class="inline-toggle" id="emailToggleBtn" onclick="toggleEmail2()">+ Agregar otro correo</button>
+                            </div>
                             <input type="email" id="email" name="email" autocomplete="email" placeholder="nombre@correo.cl" required>
                             <div class="err">Email inválido</div>
                         </div>
@@ -171,6 +185,35 @@
                             <label for="telefono">Teléfono <span class="req">*</span></label>
                             <input type="tel" id="telefono" name="telefono" autocomplete="tel" placeholder="+56 9 1234 5678" required>
                             <div class="err">Teléfono inválido</div>
+                        </div>
+
+                        <div class="field full" id="email2Field" style="display:none">
+                            <div class="label-row">
+                                <label for="email2">Segundo correo</label>
+                                <button type="button" class="inline-toggle remove" onclick="toggleEmail2()">× Quitar</button>
+                            </div>
+                            <input type="email" id="email2" name="email2" autocomplete="email" placeholder="otro@correo.cl">
+                            <div class="err">Segundo email inválido</div>
+                        </div>
+
+                        <div class="field full">
+                            <label for="fuente">¿Por dónde llegaron a nosotros?</label>
+                            <select id="fuente" name="fuente" onchange="onFuenteChange()">
+                                <option value="">Seleccionar…</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Recomendación">Recomendación</option>
+                                <option value="Google">Google</option>
+                                <option value="Wedding planner">Wedding planner</option>
+                                <option value="Evento anterior">Evento anterior</option>
+                                <option value="Pasaron por la sede">Pasaron por la sede</option>
+                                <option value="__otro__">Otro / Especificar…</option>
+                            </select>
+                        </div>
+
+                        <div class="field full" id="fuenteOtroField" style="display:none">
+                            <label for="fuenteOtro">Especificá la fuente</label>
+                            <input type="text" id="fuenteOtro" name="fuenteOtro" placeholder="Ej: TikTok, feria, expo novios, otro proveedor…">
+                            <div class="err">Especificá la fuente o elegí otra opción</div>
                         </div>
 
                         <div class="field">
@@ -227,8 +270,8 @@
     </div>
 
     <script>
-        // URL del Apps Script desplegado (v3: testMode + defaults H/I/J + clonado de formato)
-        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzyb0zO_EqOyDJ06BQBqXc0SckCfjRJoKCm1kgcoWMNbgwMnZm0v0Q_TADJmhj6mpNm/exec';
+        // URL del Apps Script desplegado (v4: + segundo email + fuente + extender CF)
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyrU-fm3fsJCu6iDV2o1JoR8YsBMj4XyjILpGVz6NSlEV5v7xVkJjvVJFZWOvWI3DwU/exec';
 
         // Modo prueba: se activa con ?test=1 en la URL
         // En modo prueba el backend omite CC al equipo y marca la fila como [TEST]
@@ -260,13 +303,52 @@
             statusEl.textContent = '';
         }
 
+        function toggleEmail2() {
+            const field = document.getElementById('email2Field');
+            const btn = document.getElementById('emailToggleBtn');
+            const visible = field.style.display !== 'none';
+            if (visible) {
+                field.style.display = 'none';
+                document.getElementById('email2').value = '';
+                field.classList.remove('has-error');
+                btn.textContent = '+ Agregar otro correo';
+            } else {
+                field.style.display = '';
+                btn.textContent = '× Quitar segundo correo';
+                document.getElementById('email2').focus();
+            }
+        }
+
+        function onFuenteChange() {
+            const sel = document.getElementById('fuente');
+            const otroField = document.getElementById('fuenteOtroField');
+            if (sel.value === '__otro__') {
+                otroField.style.display = '';
+                document.getElementById('fuenteOtro').focus();
+            } else {
+                otroField.style.display = 'none';
+                document.getElementById('fuenteOtro').value = '';
+                otroField.classList.remove('has-error');
+            }
+        }
+
+        const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
         function validar(data) {
             const errors = {};
             if (!data.nombre.trim()) errors.nombre = 'Nombre requerido';
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) errors.email = 'Email inválido';
+            if (!EMAIL_RE.test(data.email.trim())) errors.email = 'Email inválido';
+            if (data.email2 && data.email2.trim() && !EMAIL_RE.test(data.email2.trim())) {
+                errors.email2 = 'Segundo email inválido';
+            }
             const digitos = data.telefono.replace(/\D/g, '');
             if (digitos.length < 8) errors.telefono = 'Teléfono inválido';
             if (!data.comercial) errors.comercial = 'Comercial requerido';
+            // Si eligió "Otro" en fuente, fuenteOtro debe tener valor
+            const fuenteRaw = document.getElementById('fuente').value;
+            if (fuenteRaw === '__otro__' && !document.getElementById('fuenteOtro').value.trim()) {
+                errors.fuenteOtro = 'Especificá la fuente';
+            }
             return errors;
         }
 
@@ -282,6 +364,17 @@
                 statusEl.className = 'status err';
                 statusEl.textContent = 'Revisá los campos marcados.';
                 return;
+            }
+
+            // Resolver "fuente": si eligió Otro, usar el valor del input libre
+            if (data.fuente === '__otro__') {
+                data.fuente = (data.fuenteOtro || '').trim();
+            }
+            delete data.fuenteOtro;
+
+            // Si email2 está vacío, quitarlo del payload
+            if (!data.email2 || !data.email2.trim()) {
+                delete data.email2;
             }
 
             submitBtn.disabled = true;
@@ -343,6 +436,10 @@
         function resetForm() {
             form.reset();
             clearFieldErrors();
+            // Ocultar segundo correo y fuente otro
+            document.getElementById('email2Field').style.display = 'none';
+            document.getElementById('emailToggleBtn').textContent = '+ Agregar otro correo';
+            document.getElementById('fuenteOtroField').style.display = 'none';
             submitBtn.disabled = false;
             submitBtn.textContent = TEST_MODE
                 ? '[PRUEBA] Registrar lead (sin CC al equipo)'
@@ -353,7 +450,7 @@
         }
 
         // Limpiar error de un campo cuando el user lo corrige
-        ['nombre','email','telefono','comercial'].forEach(name => {
+        ['nombre','email','email2','telefono','comercial','fuenteOtro'].forEach(name => {
             const el = document.querySelector('[name="' + name + '"]');
             if (el) el.addEventListener('input', () => showFieldError(name, false));
             if (el) el.addEventListener('change', () => showFieldError(name, false));
