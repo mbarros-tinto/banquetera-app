@@ -117,6 +117,52 @@
         }
         .success-screen .btn-link:hover{text-decoration:underline}
 
+        /* Modal preview */
+        .preview-overlay{
+            display:none;position:fixed;top:0;left:0;
+            width:100%;height:100%;background:rgba(0,0,0,0.65);
+            z-index:5000;align-items:center;justify-content:center;
+            padding:20px;
+        }
+        .preview-overlay.show{display:flex}
+        .preview-modal{
+            background:#fff;border-radius:14px;
+            max-width:780px;width:100%;max-height:90vh;
+            display:flex;flex-direction:column;
+            box-shadow:0 12px 40px rgba(0,0,0,.4);
+            overflow:hidden;
+        }
+        .preview-header{
+            padding:14px 20px;background:#fafafa;
+            border-bottom:1px solid #eaeaea;
+            display:flex;align-items:center;justify-content:space-between;gap:12px;
+        }
+        .preview-header h3{font-size:1em;color:#2c3e50;margin:0}
+        .preview-close{
+            background:none;border:none;font-size:1.5em;
+            cursor:pointer;color:#999;line-height:1;padding:0;
+        }
+        .preview-close:hover{color:#333}
+        .preview-meta{
+            padding:10px 20px;background:#fff;border-bottom:1px solid #eaeaea;
+            font-size:.82em;color:#666;line-height:1.5;
+        }
+        .preview-meta .row{display:flex;gap:8px;align-items:baseline}
+        .preview-meta .lbl{font-weight:600;color:#2c3e50;min-width:60px}
+        .preview-meta .val{flex:1;word-break:break-word}
+        .preview-iframe{
+            flex:1;width:100%;border:none;background:#fff;
+            min-height:400px;
+        }
+        .preview-footer{
+            padding:12px 20px;background:#fafafa;
+            border-top:1px solid #eaeaea;
+            display:flex;gap:10px;justify-content:flex-end;
+        }
+        .preview-footer .btn{padding:9px 16px;font-size:.88em}
+        .btn-secondary{background:#fff;color:#2c3e50;border:1px solid #ddd}
+        .btn-secondary:hover{background:#f5f5f5}
+
         /* Banner modo test */
         .test-banner{
             background:linear-gradient(135deg,#ffc107,#ff9800);
@@ -244,17 +290,46 @@
                         </div>
 
                         <div class="field full">
-                            <label for="comentarios">Comentarios / notas internas</label>
-                            <textarea id="comentarios" name="comentarios" placeholder="¿Por dónde llegó? ¿Qué pidió específicamente? ¿Alguna referencia interna?"></textarea>
+                            <label for="personalizacion">Personalización del correo <span class="hint" style="font-weight:400;color:#999">(opcional, va dentro del correo al novio)</span></label>
+                            <textarea id="personalizacion" name="personalizacion" rows="3" placeholder="Ej: 'Les cuento que para esos meses solo nos queda en día sábado el 5 y 26 de diciembre.' Si lo dejás vacío, va un párrafo genérico."></textarea>
+                            <div class="hint">Va después del "¿Cómo estás?". El resto del correo (links de presentación, precios, etc.) es plantilla fija.</div>
+                        </div>
+
+                        <div class="field full">
+                            <label for="comentarios">Comentarios / notas internas <span class="hint" style="font-weight:400;color:#999">(no se envía al novio)</span></label>
+                            <textarea id="comentarios" name="comentarios" placeholder="¿Algo que el equipo deba saber? Referencias internas, contexto de la llamada, etc."></textarea>
                         </div>
                     </div>
 
                     <div class="actions">
+                        <button type="button" class="btn btn-secondary" id="previewBtn" onclick="previsualizarCorreo()">Previsualizar correo</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">Registrar lead y enviar correo</button>
                     </div>
 
                     <div id="status" class="status"></div>
                 </form>
+            </div>
+
+            <!-- Modal Preview -->
+            <div class="preview-overlay" id="previewOverlay" onclick="if(event.target===this)cerrarPreview()">
+                <div class="preview-modal">
+                    <div class="preview-header">
+                        <h3>Vista previa del correo</h3>
+                        <button class="preview-close" onclick="cerrarPreview()">&times;</button>
+                    </div>
+                    <div class="preview-meta">
+                        <div class="row"><span class="lbl">De:</span><span class="val" id="prevFrom">—</span></div>
+                        <div class="row"><span class="lbl">Para:</span><span class="val" id="prevTo">—</span></div>
+                        <div class="row" id="prevCcRow"><span class="lbl">CC:</span><span class="val" id="prevCc">—</span></div>
+                        <div class="row"><span class="lbl">Reply-to:</span><span class="val" id="prevReplyTo">—</span></div>
+                        <div class="row"><span class="lbl">Asunto:</span><span class="val" id="prevAsunto">—</span></div>
+                    </div>
+                    <iframe class="preview-iframe" id="prevIframe" sandbox="allow-same-origin"></iframe>
+                    <div class="preview-footer">
+                        <button class="btn btn-secondary" onclick="cerrarPreview()">Cerrar</button>
+                        <button class="btn btn-primary" style="flex:none" onclick="cerrarPreview();form.requestSubmit()">Enviar este correo</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Success -->
@@ -270,8 +345,8 @@
     </div>
 
     <script>
-        // URL del Apps Script desplegado (v4: + segundo email + fuente + extender CF)
-        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyrU-fm3fsJCu6iDV2o1JoR8YsBMj4XyjILpGVz6NSlEV5v7xVkJjvVJFZWOvWI3DwU/exec';
+        // URL del Apps Script (v5: plantilla Catalina + personalizacion + endpoint preview)
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzjn4qg1JwLS5bp4UJA16wT41-xPKukkng61y94qKNNV26F1_Fl4bi0-9s0yxDvxXyw/exec';
 
         // Modo prueba: se activa con ?test=1 en la URL
         // En modo prueba el backend omite CC al equipo y marca la fila como [TEST]
@@ -286,10 +361,92 @@
 
         const form = document.getElementById('leadForm');
         const submitBtn = document.getElementById('submitBtn');
+        const previewBtn = document.getElementById('previewBtn');
         const statusEl = document.getElementById('status');
         const formView = document.getElementById('formView');
         const successView = document.getElementById('successView');
         const successDetail = document.getElementById('successDetail');
+        const previewOverlay = document.getElementById('previewOverlay');
+
+        // Construye el payload a partir del form, resolviendo fuente/email2
+        function buildPayload() {
+            const data = Object.fromEntries(new FormData(form).entries());
+            if (data.fuente === '__otro__') {
+                data.fuente = (data.fuenteOtro || '').trim();
+            }
+            delete data.fuenteOtro;
+            if (!data.email2 || !data.email2.trim()) delete data.email2;
+            return data;
+        }
+
+        async function previsualizarCorreo() {
+            // Para preview solo exigimos nombre y comercial
+            const data = buildPayload();
+            const errors = {};
+            if (!data.nombre || !data.nombre.trim()) errors.nombre = 'Nombre requerido';
+            if (!data.comercial) errors.comercial = 'Comercial requerido';
+            if (Object.keys(errors).length) {
+                clearFieldErrors();
+                Object.keys(errors).forEach(name => showFieldError(name, true));
+                statusEl.className = 'status err';
+                statusEl.textContent = 'Para previsualizar necesito al menos Nombre y Comercial.';
+                return;
+            }
+
+            data.previewOnly = true;
+            if (TEST_MODE) data.testMode = true;
+
+            previewBtn.disabled = true;
+            previewBtn.textContent = 'Generando…';
+            statusEl.className = 'status';
+            statusEl.textContent = '';
+
+            try {
+                const res = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data),
+                    redirect: 'follow'
+                });
+                const result = await res.json();
+
+                if (!result.ok) {
+                    statusEl.className = 'status err';
+                    statusEl.textContent = (result.errors || []).join(' · ') || result.error || 'Error generando preview';
+                    return;
+                }
+
+                // Poblar modal con metadatos
+                document.getElementById('prevFrom').textContent = result.from || '(alias comercial@)';
+                document.getElementById('prevTo').textContent = (data.email || '(sin email)') + (data.email2 ? ', ' + data.email2 : '');
+                document.getElementById('prevCcRow').style.display = result.cc ? 'flex' : 'none';
+                document.getElementById('prevCc').textContent = result.cc || '';
+                document.getElementById('prevReplyTo').textContent = result.replyTo || '';
+                document.getElementById('prevAsunto').textContent = result.asunto || '';
+
+                // Cargar HTML en el iframe via srcdoc
+                document.getElementById('prevIframe').srcdoc = result.html || '<p>(sin contenido)</p>';
+
+                previewOverlay.classList.add('show');
+            } catch (err) {
+                statusEl.className = 'status err';
+                statusEl.textContent = 'No se pudo generar el preview: ' + err.message;
+            } finally {
+                previewBtn.disabled = false;
+                previewBtn.textContent = 'Previsualizar correo';
+            }
+        }
+
+        function cerrarPreview() {
+            previewOverlay.classList.remove('show');
+        }
+
+        // Cerrar preview con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && previewOverlay.classList.contains('show')) {
+                cerrarPreview();
+            }
+        });
 
         function showFieldError(name, hasError) {
             const input = document.querySelector('[name="' + name + '"]');
@@ -356,8 +513,9 @@
             e.preventDefault();
             clearFieldErrors();
 
-            const data = Object.fromEntries(new FormData(form).entries());
-            const errors = validar(data);
+            // Validamos con los datos crudos del form (validar usa fuente raw para detectar __otro__)
+            const rawData = Object.fromEntries(new FormData(form).entries());
+            const errors = validar(rawData);
 
             if (Object.keys(errors).length) {
                 Object.keys(errors).forEach(name => showFieldError(name, true));
@@ -366,16 +524,8 @@
                 return;
             }
 
-            // Resolver "fuente": si eligió Otro, usar el valor del input libre
-            if (data.fuente === '__otro__') {
-                data.fuente = (data.fuenteOtro || '').trim();
-            }
-            delete data.fuenteOtro;
-
-            // Si email2 está vacío, quitarlo del payload
-            if (!data.email2 || !data.email2.trim()) {
-                delete data.email2;
-            }
+            // Payload final con resoluciones
+            const data = buildPayload();
 
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando…';
