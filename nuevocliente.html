@@ -68,6 +68,19 @@
         .field.has-error textarea{border-color:#e74c3c}
         .field.has-error .err{display:block}
 
+        /* Radio group variantes correo */
+        .radio-group{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+        .radio-option{
+            display:flex;align-items:flex-start;gap:10px;
+            padding:10px 12px;border:1px solid #ddd;border-radius:8px;
+            cursor:pointer;transition:all .15s;background:#fff;
+        }
+        .radio-option:hover{border-color:#c89b3c;background:#fffdf6}
+        .radio-option input[type="radio"]{margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:#c89b3c}
+        .radio-option.checked{border-color:#c89b3c;background:#fff8e7;box-shadow:0 0 0 2px rgba(200,155,60,.15)}
+        .radio-option .ro-label{font-weight:600;color:#2c3e50;font-size:.92em;display:block;margin-bottom:2px}
+        .radio-option .ro-hint{font-size:.78em;color:#6c757d;line-height:1.4}
+
         /* Label con boton inline (toggle 2do correo) */
         .label-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
         .inline-toggle{
@@ -290,6 +303,33 @@
                         </div>
 
                         <div class="field full">
+                            <label>Plantilla del correo</label>
+                            <div class="radio-group" id="varianteGroup">
+                                <label class="radio-option checked">
+                                    <input type="radio" name="variante" value="normal" checked>
+                                    <div>
+                                        <span class="ro-label">Normal (cotización estándar)</span>
+                                        <span class="ro-hint">Incluye los 3 archivos habituales: Presentación, Detalle Tinto y Rango de precios.</span>
+                                    </div>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="variante" value="con_convenio">
+                                    <div>
+                                        <span class="ro-label">Con convenio Parque San Rafael</span>
+                                        <span class="ro-hint">Los 3 archivos normales + un 4° link con el convenio Parque San Rafael.</span>
+                                    </div>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="variante" value="solo_convenio">
+                                    <div>
+                                        <span class="ro-label">Solo convenio Parque San Rafael</span>
+                                        <span class="ro-hint">Reemplaza el Rango de precios general por el convenio Parque San Rafael. Quedan 3 archivos.</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="field full">
                             <label for="personalizacion">Personalización del correo <span class="hint" style="font-weight:400;color:#999">(opcional, va dentro del correo al novio)</span></label>
                             <textarea id="personalizacion" name="personalizacion" rows="3" placeholder="Ej: 'Les cuento que para esos meses solo nos queda en día sábado el 5 y 26 de diciembre.' Si lo dejás vacío, va un párrafo genérico."></textarea>
                             <div class="hint">Va después del "¿Cómo estás?". El resto del correo (links de presentación, precios, etc.) es plantilla fija.</div>
@@ -345,8 +385,8 @@
     </div>
 
     <script>
-        // URL del Apps Script (v5: plantilla Catalina + personalizacion + endpoint preview)
-        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzjn4qg1JwLS5bp4UJA16wT41-xPKukkng61y94qKNNV26F1_Fl4bi0-9s0yxDvxXyw/exec';
+        // URL del Apps Script (v6: variantes correo + display name comercial)
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzsTH4i4rxW8jtbCgWeqg7A0V4HwO5VRuMECFe-Pae_kjLwiAV89JJ-jEwCfCDrK9-j/exec';
 
         // Modo prueba: se activa con ?test=1 en la URL
         // En modo prueba el backend omite CC al equipo y marca la fila como [TEST]
@@ -446,6 +486,15 @@
             if (e.key === 'Escape' && previewOverlay.classList.contains('show')) {
                 cerrarPreview();
             }
+        });
+
+        // Resaltar visualmente la opción de variante activa
+        document.querySelectorAll('#varianteGroup input[name="variante"]').forEach(input => {
+            input.addEventListener('change', () => {
+                document.querySelectorAll('#varianteGroup .radio-option').forEach(opt => {
+                    opt.classList.toggle('checked', opt.querySelector('input').checked);
+                });
+            });
         });
 
         function showFieldError(name, hasError) {
@@ -590,6 +639,10 @@
             document.getElementById('email2Field').style.display = 'none';
             document.getElementById('emailToggleBtn').textContent = '+ Agregar otro correo';
             document.getElementById('fuenteOtroField').style.display = 'none';
+            // Volver el radio a "normal" visualmente
+            document.querySelectorAll('#varianteGroup .radio-option').forEach((opt, i) => {
+                opt.classList.toggle('checked', i === 0);
+            });
             submitBtn.disabled = false;
             submitBtn.textContent = TEST_MODE
                 ? '[PRUEBA] Registrar lead (sin CC al equipo)'
