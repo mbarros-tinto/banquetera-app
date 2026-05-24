@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Cliente · Tinto Banquetería</title>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1776383476/Icono_sin_fondo_wyxgzb.png">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1776383476/Icono_sin_fondo_wyxgzb.png">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            color:#333;min-height:100vh;
+            background:#1a1a2e url('https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1776365257/Javiera_y_Felipe-468_jxrjef.jpg') center/cover fixed no-repeat;
+        }
+        body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(26,26,46,0.82),rgba(44,62,80,0.78));z-index:0;pointer-events:none}
+
+        .container{max-width:640px;margin:0 auto;padding:24px 16px;position:relative;z-index:1}
+
+        .header{
+            display:flex;align-items:center;gap:14px;margin-bottom:20px;
+            color:#fff;
+        }
+        .header img{height:48px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
+        .header h1{font-size:1.55em;text-shadow:0 1px 3px rgba(0,0,0,.3);margin:0;line-height:1.2}
+        .header p{font-size:.88em;opacity:.85;margin:0}
+        .header-text{display:flex;flex-direction:column;gap:2px}
+
+        .card{
+            background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);
+            border-radius:16px;padding:28px 26px;
+            box-shadow:0 8px 32px rgba(0,0,0,.3);
+            border:1px solid rgba(255,255,255,0.6);
+            position:relative;overflow:hidden;
+        }
+        .card::before{
+            content:'';position:absolute;top:0;left:0;right:0;height:3px;
+            background:linear-gradient(90deg,#c89b3c,#e6c068,#c89b3c);
+            opacity:.9;
+        }
+
+        .card h2{font-size:1.2em;color:#2c3e50;margin-bottom:6px}
+        .card .lead{color:#6c757d;font-size:.92em;margin-bottom:22px;line-height:1.5}
+
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .field{display:flex;flex-direction:column;gap:5px}
+        .field.full{grid-column:1 / -1}
+        .field label{font-size:.82em;color:#495057;font-weight:600}
+        .field label .req{color:#c89b3c;margin-left:3px}
+        .field input,
+        .field select,
+        .field textarea{
+            width:100%;padding:10px 12px;font-size:.95em;
+            border:1px solid #ddd;border-radius:8px;
+            font-family:inherit;background:#fff;
+            transition:border-color .15s, box-shadow .15s;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus{
+            outline:none;border-color:#c89b3c;box-shadow:0 0 0 3px rgba(200,155,60,.15);
+        }
+        .field textarea{min-height:80px;resize:vertical}
+        .field .hint{font-size:.75em;color:#999;margin-top:2px}
+        .field .err{font-size:.78em;color:#e74c3c;margin-top:2px;display:none}
+        .field.has-error input,
+        .field.has-error select,
+        .field.has-error textarea{border-color:#e74c3c}
+        .field.has-error .err{display:block}
+
+        .actions{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+        .btn{
+            padding:12px 22px;border:none;border-radius:8px;cursor:pointer;
+            font-size:.95em;font-weight:600;transition:all .2s;
+            font-family:inherit;
+        }
+        .btn-primary{
+            background:linear-gradient(135deg,#c89b3c,#b8862a);
+            color:#fff;flex:1;min-width:200px;
+            box-shadow:0 3px 10px rgba(200,155,60,.35);
+        }
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(200,155,60,.45)}
+        .btn-primary:disabled{opacity:.6;cursor:wait;transform:none}
+
+        .status{
+            margin-top:18px;padding:14px;border-radius:10px;
+            font-size:.92em;line-height:1.5;display:none;
+        }
+        .status.ok{display:block;background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+        .status.err{display:block;background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+
+        .success-screen{display:none;text-align:center;padding:14px 4px}
+        .success-screen.show{display:block}
+        .success-icon{
+            width:72px;height:72px;margin:0 auto 16px;
+            border-radius:50%;background:linear-gradient(135deg,#c89b3c,#e6c068);
+            display:flex;align-items:center;justify-content:center;
+            font-size:2.4em;color:#fff;box-shadow:0 4px 16px rgba(200,155,60,.4);
+        }
+        .success-screen h2{color:#2c3e50;margin-bottom:10px;font-size:1.35em}
+        .success-screen p{color:#6c757d;margin-bottom:8px;font-size:.95em;line-height:1.5}
+        .success-screen .small{font-size:.82em;color:#999;margin-top:14px}
+        .success-screen .btn-link{
+            display:inline-block;margin-top:18px;color:#c89b3c;
+            text-decoration:none;font-weight:600;cursor:pointer;
+        }
+        .success-screen .btn-link:hover{text-decoration:underline}
+
+        @media(max-width:560px){
+            .container{padding:14px 10px}
+            .header h1{font-size:1.25em}
+            .header img{height:40px}
+            .card{padding:22px 18px}
+            .form-grid{grid-template-columns:1fr;gap:12px}
+            .btn-primary{min-width:0}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1765987524/Logo_Blanco_y_dorado_png_mbekud.png" alt="Tinto Banquetería">
+            <div class="header-text">
+                <h1>Nuevo Cliente</h1>
+                <p>Registro de lead — Tinto Banquetería</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <!-- Form -->
+            <div id="formView">
+                <h2>Datos del novio/novia</h2>
+                <p class="lead">Completá los datos de la persona que te contactó. Se va a registrar en el CRM y se enviará un correo automático de bienvenida con copia al equipo.</p>
+
+                <form id="leadForm" novalidate>
+                    <div class="form-grid">
+                        <div class="field full">
+                            <label for="nombre">Nombre del novio/a <span class="req">*</span></label>
+                            <input type="text" id="nombre" name="nombre" autocomplete="name" required>
+                            <div class="err">Nombre requerido</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Email <span class="req">*</span></label>
+                            <input type="email" id="email" name="email" autocomplete="email" placeholder="nombre@correo.cl" required>
+                            <div class="err">Email inválido</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="telefono">Teléfono <span class="req">*</span></label>
+                            <input type="tel" id="telefono" name="telefono" autocomplete="tel" placeholder="+56 9 1234 5678" required>
+                            <div class="err">Teléfono inválido</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="fechaTentativa">Fecha tentativa del evento</label>
+                            <input type="date" id="fechaTentativa" name="fechaTentativa">
+                            <div class="hint">Si todavía no la tienen, dejá vacío</div>
+                        </div>
+
+                        <div class="field">
+                            <label for="pax">Cantidad de invitados aprox</label>
+                            <input type="number" id="pax" name="pax" min="0" step="10" placeholder="200">
+                        </div>
+
+                        <div class="field full">
+                            <label for="salon">Salón / lugar de interés</label>
+                            <input type="text" id="salon" name="salon" placeholder="Parque San Rafael, Casa Escondida, etc.">
+                        </div>
+
+                        <div class="field full">
+                            <label for="comercial">Comercial asignado <span class="req">*</span></label>
+                            <select id="comercial" name="comercial" required>
+                                <option value="">Seleccionar…</option>
+                                <option value="Sofia Saavedra">Sofia Saavedra</option>
+                                <option value="Catalina Fernandez">Catalina Fernandez</option>
+                                <option value="Ignacio Rodriguez">Ignacio Rodriguez</option>
+                            </select>
+                            <div class="err">Comercial requerido</div>
+                        </div>
+
+                        <div class="field full">
+                            <label for="comentarios">Comentarios / notas internas</label>
+                            <textarea id="comentarios" name="comentarios" placeholder="¿Por dónde llegó? ¿Qué pidió específicamente? ¿Alguna referencia interna?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Registrar lead y enviar correo</button>
+                    </div>
+
+                    <div id="status" class="status"></div>
+                </form>
+            </div>
+
+            <!-- Success -->
+            <div id="successView" class="success-screen">
+                <div class="success-icon">✓</div>
+                <h2>¡Lead registrado!</h2>
+                <p>Se anotó en la hoja <strong>Por Cerrar</strong> del CRM Tinto.</p>
+                <p>Se envió el correo de bienvenida con copia a Sofía, Catalina y Socios.</p>
+                <p class="small" id="successDetail"></p>
+                <a class="btn-link" onclick="resetForm()">Registrar otro lead</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL del Apps Script desplegado
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxG_Zrc9hT_4DBMeILlXvAfysPdlfXO6LBQ39ROAFZ4CUgKC6ZSlojiRnS3ITQFZe9n/exec';
+
+        const form = document.getElementById('leadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusEl = document.getElementById('status');
+        const formView = document.getElementById('formView');
+        const successView = document.getElementById('successView');
+        const successDetail = document.getElementById('successDetail');
+
+        function showFieldError(name, hasError) {
+            const input = document.querySelector('[name="' + name + '"]');
+            if (!input) return;
+            input.closest('.field').classList.toggle('has-error', hasError);
+        }
+
+        function clearFieldErrors() {
+            document.querySelectorAll('.field.has-error').forEach(f => f.classList.remove('has-error'));
+            statusEl.className = 'status';
+            statusEl.textContent = '';
+        }
+
+        function validar(data) {
+            const errors = {};
+            if (!data.nombre.trim()) errors.nombre = 'Nombre requerido';
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) errors.email = 'Email inválido';
+            const digitos = data.telefono.replace(/\D/g, '');
+            if (digitos.length < 8) errors.telefono = 'Teléfono inválido';
+            if (!data.comercial) errors.comercial = 'Comercial requerido';
+            return errors;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearFieldErrors();
+
+            const data = Object.fromEntries(new FormData(form).entries());
+            const errors = validar(data);
+
+            if (Object.keys(errors).length) {
+                Object.keys(errors).forEach(name => showFieldError(name, true));
+                statusEl.className = 'status err';
+                statusEl.textContent = 'Revisá los campos marcados.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando…';
+            statusEl.className = 'status';
+            statusEl.textContent = '';
+
+            try {
+                // text/plain evita preflight CORS — Apps Script parsea e.postData.contents
+                const res = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(data),
+                    redirect: 'follow'
+                });
+                const result = await res.json();
+
+                if (!result.ok) {
+                    let msg = 'Error al registrar.';
+                    if (result.errors && result.errors.length) {
+                        msg = result.errors.join(' · ');
+                    } else if (result.error) {
+                        msg = result.error;
+                    }
+                    statusEl.className = 'status err';
+                    statusEl.textContent = msg;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Registrar lead y enviar correo';
+                    return;
+                }
+
+                // Éxito
+                formView.style.display = 'none';
+                successView.classList.add('show');
+                let detail = 'Fila ' + (result.rowNumber || '?');
+                if (result.emailStatus === 'sent_without_alias_fallback_to_user') {
+                    detail += ' · Correo enviado desde tu cuenta personal (alias comercial@ aún no configurado).';
+                }
+                successDetail.textContent = detail;
+
+            } catch (err) {
+                statusEl.className = 'status err';
+                statusEl.textContent = 'No se pudo enviar. Revisá tu conexión e intentá de nuevo. (' + err.message + ')';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Registrar lead y enviar correo';
+            }
+        });
+
+        function resetForm() {
+            form.reset();
+            clearFieldErrors();
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Registrar lead y enviar correo';
+            successView.classList.remove('show');
+            formView.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // Limpiar error de un campo cuando el user lo corrige
+        ['nombre','email','telefono','comercial'].forEach(name => {
+            const el = document.querySelector('[name="' + name + '"]');
+            if (el) el.addEventListener('input', () => showFieldError(name, false));
+            if (el) el.addEventListener('change', () => showFieldError(name, false));
+        });
+    </script>
+</body>
+</html>
