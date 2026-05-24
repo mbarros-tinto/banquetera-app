@@ -106,6 +106,19 @@
         }
         .success-screen .btn-link:hover{text-decoration:underline}
 
+        /* Banner modo test */
+        .test-banner{
+            background:linear-gradient(135deg,#ffc107,#ff9800);
+            color:#fff;padding:10px 16px;border-radius:10px;
+            margin-bottom:16px;font-size:.9em;font-weight:600;
+            box-shadow:0 4px 12px rgba(255,152,0,.35);
+            display:none;align-items:center;gap:10px;
+            position:relative;z-index:1;
+        }
+        .test-banner.show{display:flex}
+        .test-banner .test-icon{font-size:1.4em}
+        .test-banner .test-detail{font-weight:400;font-size:.85em;opacity:.95;display:block;margin-top:2px}
+
         @media(max-width:560px){
             .container{padding:14px 10px}
             .header h1{font-size:1.25em}
@@ -123,6 +136,14 @@
             <div class="header-text">
                 <h1>Nuevo Cliente</h1>
                 <p>Registro de lead — Tinto Banquetería</p>
+            </div>
+        </div>
+
+        <div id="testBanner" class="test-banner">
+            <span class="test-icon">🧪</span>
+            <div>
+                MODO PRUEBA ACTIVO
+                <span class="test-detail">No se envía CC al equipo. El lead se marca [TEST] en el CRM.</span>
             </div>
         </div>
 
@@ -206,8 +227,19 @@
     </div>
 
     <script>
-        // URL del Apps Script desplegado
-        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxG_Zrc9hT_4DBMeILlXvAfysPdlfXO6LBQ39ROAFZ4CUgKC6ZSlojiRnS3ITQFZe9n/exec';
+        // URL del Apps Script desplegado (v2 con soporte testMode)
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyt7GUnJePVtRd8oV6H33F-jZfYGN0EutdJ9pFuF7i6SCSP8I_bT9X-8ZxztUmNyBAQ/exec';
+
+        // Modo prueba: se activa con ?test=1 en la URL
+        // En modo prueba el backend omite CC al equipo y marca la fila como [TEST]
+        const params = new URLSearchParams(location.search);
+        const TEST_MODE = params.get('test') === '1';
+        if (TEST_MODE) {
+            document.getElementById('testBanner').classList.add('show');
+            document.title = '[TEST] ' + document.title;
+            const btn = document.getElementById('submitBtn');
+            btn.textContent = '[PRUEBA] Registrar lead (sin CC al equipo)';
+        }
 
         const form = document.getElementById('leadForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -257,6 +289,9 @@
             statusEl.className = 'status';
             statusEl.textContent = '';
 
+            // Inyectar flag de modo prueba si corresponde
+            if (TEST_MODE) data.testMode = true;
+
             try {
                 // text/plain evita preflight CORS — Apps Script parsea e.postData.contents
                 const res = await fetch(BACKEND_URL, {
@@ -277,24 +312,31 @@
                     statusEl.className = 'status err';
                     statusEl.textContent = msg;
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Registrar lead y enviar correo';
+                    submitBtn.textContent = TEST_MODE
+                        ? '[PRUEBA] Registrar lead (sin CC al equipo)'
+                        : 'Registrar lead y enviar correo';
                     return;
                 }
 
                 // Éxito
                 formView.style.display = 'none';
                 successView.classList.add('show');
-                let detail = 'Fila ' + (result.rowNumber || '?');
-                if (result.emailStatus === 'sent_without_alias_fallback_to_user') {
-                    detail += ' · Correo enviado desde tu cuenta personal (alias comercial@ aún no configurado).';
+                const partes = ['Fila ' + (result.rowNumber || '?')];
+                if (result.testMode) {
+                    partes.push('Modo prueba: sin CC al equipo, fila marcada [TEST]');
                 }
-                successDetail.textContent = detail;
+                if (result.emailStatus && result.emailStatus.indexOf('fallback_user') !== -1) {
+                    partes.push('Correo enviado desde tu cuenta personal (alias comercial@ aún no configurado)');
+                }
+                successDetail.textContent = partes.join(' · ');
 
             } catch (err) {
                 statusEl.className = 'status err';
                 statusEl.textContent = 'No se pudo enviar. Revisá tu conexión e intentá de nuevo. (' + err.message + ')';
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Registrar lead y enviar correo';
+                submitBtn.textContent = TEST_MODE
+                    ? '[PRUEBA] Registrar lead (sin CC al equipo)'
+                    : 'Registrar lead y enviar correo';
             }
         });
 
@@ -302,7 +344,9 @@
             form.reset();
             clearFieldErrors();
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Registrar lead y enviar correo';
+            submitBtn.textContent = TEST_MODE
+                ? '[PRUEBA] Registrar lead (sin CC al equipo)'
+                : 'Registrar lead y enviar correo';
             successView.classList.remove('show');
             formView.style.display = 'block';
             window.scrollTo(0, 0);
