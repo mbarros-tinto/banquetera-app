@@ -1,86 +1,49 @@
 #!/usr/bin/env node
 /**
- * Hook SessionStart — sync de la memoria compartida del CRM Tinto.
- *
- * Corre `git fetch` al iniciar cada sesion de Claude Code y, si detecta
- * desincronizacion, inyecta un aviso al contexto (additionalContext).
- * SOLO avisa — nunca modifica el repo. Si todo esta sincronizado, calla.
- *
- * Cross-platform (Windows/Mac/Linux): se invoca como `node .claude/hooks/session-start.mjs`.
- * Unica dependencia: node + git en el PATH.
+ * Hook SessionStart — sync de coordinación entre 2 devs.
+ * Corre `git fetch` al iniciar la sesión y avisa si el otro dev avanzó,
+ * si tenés commits sin pushear, o cambios de coordinación sin commitear.
+ * Solo avisa — nunca modifica el repo. Si todo está sincronizado, calla.
  */
 import { execSync } from 'node:child_process';
 
+const PROJECT = 'banquetera-app'; // <-- ÚNICO valor a adaptar por proyecto
+
 const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const git = (cmd) =>
-  execSync(`git ${cmd}`, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
-    .toString()
-    .trim();
+  execSync(`git ${cmd}`, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
 
 let msg = '';
 try {
-  git('rev-parse --is-inside-work-tree'); // lanza si no es repo git
-
-  // Traer el remoto (silencioso). Si falla (sin red / auth en otra cuenta), seguimos con lo local.
+  git('rev-parse --is-inside-work-tree');
   try { git('fetch --quiet'); } catch {}
-
   const branch = git('rev-parse --abbrev-ref HEAD');
 
-  // ahead = commits locales sin pushear ; behind = commits del remoto sin bajar
   let ahead = '0', behind = '0';
-  try {
-    const counts = git(`rev-list --left-right --count HEAD...origin/${branch}`);
-    [ahead, behind] = counts.split(/\s+/);
-  } catch { /* la rama no tiene tracking remoto */ }
+  try { [ahead, behind] = git(`rev-list --left-right --count HEAD...origin/${branch}`).split(/\s+/); } catch {}
 
-  // Cambios sin commitear en la memoria compartida (CLAUDE.md, WORKLOG.md o .claude/)
-  let dirtyMem = '';
-  try { dirtyMem = git('status --porcelain -- CLAUDE.md WORKLOG.md .claude'); } catch {}
+  let dirty = '';
+  try { dirty = git('status --porcelain -- CLAUDE.md .claude BITACORA.md'); } catch {}
 
   const parts = [];
-
   if (Number(behind) > 0) {
     let who = '';
-    try {
-      const authors = git(`log --format=%an HEAD..origin/${branch}`).split('\n').filter(Boolean);
-      who = [...new Set(authors)].join(', ');
-    } catch {}
-    parts.push(
-      `⬇️ origin/${branch} tiene ${behind} commit(s) nuevo(s)${who ? ' de ' + who : ''} sin bajar. ` +
-      `La memoria del proyecto esta desactualizada — sugiere \`git pull --ff-only\` antes de trabajar.`
-    );
+    try { who = [...new Set(git(`log --format=%an HEAD..origin/${branch}`).split('\n').filter(Boolean))].join(', '); } catch {}
+    parts.push(`⬇️ origin/${branch} tiene ${behind} commit(s)${who ? ' de ' + who : ''} sin bajar. ` +
+      `Corre \`git pull --ff-only\` (y bajá el destino de deploy si tu deploy sobrescribe prod) ANTES de editar o deployar.`);
   }
-
-  if (Number(ahead) > 0) {
-    parts.push(
-      `⬆️ Hay ${ahead} commit(s) local(es) sin pushear — recuerda \`git push\` para que el otro dev los reciba.`
-    );
-  }
-
-  if (dirtyMem) {
-    parts.push(
-      `📝 Cambios sin commitear en la memoria compartida (CLAUDE.md / WORKLOG.md / .claude):\n${dirtyMem}\n` +
-      `Cuando esten listos, commit + push para compartirlos.`
-    );
-  }
+  if (Number(ahead) > 0) parts.push(`⬆️ ${ahead} commit(s) local(es) sin pushear — \`git push\` para que el otro dev los reciba.`);
+  if (dirty) parts.push(`📝 Cambios sin commitear en coordinación (CLAUDE.md / .claude / BITACORA.md):\n${dirty}`);
 
   if (parts.length) {
-    msg =
-      `Sync de memoria compartida CRM Tinto (rama ${branch}):\n` +
-      parts.join('\n') +
-      `\n(Aviso automatico del hook SessionStart — ver seccion "Colaboracion" del CLAUDE.md.)`;
+    msg = `Sync de coordinación — ${PROJECT} (rama ${branch}):\n` + parts.join('\n') +
+      `\n⚠️ Trabaja en tu rama (no en la de deploy) y no deployes prod en paralelo con el otro dev. ` +
+      `(Aviso automático del hook SessionStart — ver sección "Coordinación 2 devs" del CLAUDE.md.)`;
   }
-} catch {
-  // No es repo git, o git no esta disponible: no inyectar nada.
-}
+} catch {}
 
 if (msg) {
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'SessionStart',
-        additionalContext: msg,
-      },
-    })
-  );
+  process.stdout.write(JSON.stringify({
+    hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: msg },
+  }));
 }
