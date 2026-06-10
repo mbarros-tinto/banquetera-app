@@ -20,6 +20,11 @@
 
 ---
 
+## 2026-06-10 — Sofía (con Claude) — fix/fuente-opciones-public
+- Qué toqué: `public/nuevocliente.html` — reemplazadas opciones del select "¿Por dónde llegaron a nosotros?" por las 6 nuevas acordadas. El PR anterior (#1) tocó el archivo en raíz (rama vieja); este corrige la ruta que sirve Cloudflare.
+- Deploy: pendiente de PR a main. Coordinar merge con Manuel.
+- Notas: lógica fuenteOtro sin cambios.
+
 ## 2026-06-09 — Manuel (con Claude) — main
 - Montada la metodología de coordinación 2 devs (hook + bitácora + sección CLAUDE.md).
 - Creada la rama base para Sofía: `feature/sofia-crm`.
