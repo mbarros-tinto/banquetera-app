@@ -20,6 +20,11 @@
 
 ---
 
+## 2026-06-10 — Sofía (con Claude) — feature/sofia-crm
+- Qué toqué: `nuevocliente.html` — reemplazadas las opciones del `<select id="fuente">` (¿Por dónde llegaron a nosotros?). Nuevas opciones: Recomendación de un novio anterior / Instagram / Fueron a un matrimonio Tinto y les gustó / Conocen a alguien que trabaja en Tinto / Recomendación de un centro de eventos / Otro/Especificar.
+- Deploy: sin deploy — rama pendiente de PR a main. Coordinar merge con Manuel.
+- Notas: el campo "Especificá la fuente" (fuenteOtro) y toda la lógica de validación ya existían y funcionan sin cambios.
+
 ## 2026-06-09 — Manuel (con Claude) — main
 - Montada la metodología de coordinación 2 devs (hook + bitácora + sección CLAUDE.md).
 - Creada la rama base para Sofía: `feature/sofia-crm`.
