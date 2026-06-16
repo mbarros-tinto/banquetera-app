@@ -341,7 +341,6 @@
                     </div>
 
                     <div class="actions">
-                        <button type="button" class="btn btn-secondary" id="previewBtn" onclick="previsualizarCorreo()">Previsualizar correo</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">Registrar lead y enviar correo</button>
                     </div>
 
@@ -365,8 +364,8 @@
                     </div>
                     <iframe class="preview-iframe" id="prevIframe" sandbox="allow-same-origin"></iframe>
                     <div class="preview-footer">
-                        <button class="btn btn-secondary" onclick="cerrarPreview()">Cerrar</button>
-                        <button class="btn btn-primary" style="flex:none" onclick="cerrarPreview();form.requestSubmit()">Enviar este correo</button>
+                        <button class="btn btn-secondary" onclick="cerrarPreview()">Editar</button>
+                        <button class="btn btn-primary" style="flex:none" id="confirmSendBtn" onclick="confirmarEnvio()">Registrar el lead y enviar el correo</button>
                     </div>
                 </div>
             </div>
@@ -400,8 +399,11 @@
 
         const form = document.getElementById('leadForm');
         const submitBtn = document.getElementById('submitBtn');
-        const previewBtn = document.getElementById('previewBtn');
         const statusEl = document.getElementById('status');
+
+        function defaultSubmitLabel() {
+            return TEST_MODE ? '[PRUEBA] Registrar lead (sin CC al equipo)' : 'Registrar lead y enviar correo';
+        }
         const formView = document.getElementById('formView');
         const successView = document.getElementById('successView');
         const successDetail = document.getElementById('successDetail');
@@ -418,25 +420,15 @@
             return data;
         }
 
-        async function previsualizarCorreo() {
-            // Para preview solo exigimos nombre y comercial
+        // Abre el modal con la vista previa del correo. Se llama al pulsar
+        // "Registrar lead y enviar correo", después de validar el formulario.
+        async function abrirPreview() {
             const data = buildPayload();
-            const errors = {};
-            if (!data.nombre || !data.nombre.trim()) errors.nombre = 'Nombre requerido';
-            if (!data.comercial) errors.comercial = 'Comercial requerido';
-            if (Object.keys(errors).length) {
-                clearFieldErrors();
-                Object.keys(errors).forEach(name => showFieldError(name, true));
-                statusEl.className = 'status err';
-                statusEl.textContent = 'Para previsualizar necesito al menos Nombre y Comercial.';
-                return;
-            }
-
             data.previewOnly = true;
             if (TEST_MODE) data.testMode = true;
 
-            previewBtn.disabled = true;
-            previewBtn.textContent = 'Generando…';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Generando vista previa…';
             statusEl.className = 'status';
             statusEl.textContent = '';
 
@@ -451,7 +443,7 @@
 
                 if (!result.ok) {
                     statusEl.className = 'status err';
-                    statusEl.textContent = (result.errors || []).join(' · ') || result.error || 'Error generando preview';
+                    statusEl.textContent = (result.errors || []).join(' · ') || result.error || 'Error generando la vista previa';
                     return;
                 }
 
@@ -469,10 +461,10 @@
                 previewOverlay.classList.add('show');
             } catch (err) {
                 statusEl.className = 'status err';
-                statusEl.textContent = 'No se pudo generar el preview: ' + err.message;
+                statusEl.textContent = 'No se pudo generar la vista previa: ' + err.message;
             } finally {
-                previewBtn.disabled = false;
-                previewBtn.textContent = 'Previsualizar correo';
+                submitBtn.disabled = false;
+                submitBtn.textContent = defaultSubmitLabel();
             }
         }
 
@@ -557,6 +549,8 @@
             return errors;
         }
 
+        // Al pulsar "Registrar lead y enviar correo": validar y abrir la vista
+        // previa. El envío real NO ocurre acá, sino al confirmar en el modal.
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearFieldErrors();
@@ -572,16 +566,21 @@
                 return;
             }
 
-            // Payload final con resoluciones
+            await abrirPreview();
+        });
+
+        // Envío real: se dispara desde el botón "Registrar el lead y enviar el
+        // correo" dentro del modal de vista previa.
+        async function confirmarEnvio() {
+            cerrarPreview();
+
             const data = buildPayload();
+            if (TEST_MODE) data.testMode = true;
 
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando…';
             statusEl.className = 'status';
             statusEl.textContent = '';
-
-            // Inyectar flag de modo prueba si corresponde
-            if (TEST_MODE) data.testMode = true;
 
             try {
                 // text/plain evita preflight CORS — Apps Script parsea e.postData.contents
@@ -603,9 +602,7 @@
                     statusEl.className = 'status err';
                     statusEl.textContent = msg;
                     submitBtn.disabled = false;
-                    submitBtn.textContent = TEST_MODE
-                        ? '[PRUEBA] Registrar lead (sin CC al equipo)'
-                        : 'Registrar lead y enviar correo';
+                    submitBtn.textContent = defaultSubmitLabel();
                     return;
                 }
 
@@ -631,11 +628,9 @@
                 statusEl.className = 'status err';
                 statusEl.textContent = 'No se pudo enviar. Revisá tu conexión e intentá de nuevo. (' + err.message + ')';
                 submitBtn.disabled = false;
-                submitBtn.textContent = TEST_MODE
-                    ? '[PRUEBA] Registrar lead (sin CC al equipo)'
-                    : 'Registrar lead y enviar correo';
+                submitBtn.textContent = defaultSubmitLabel();
             }
-        });
+        }
 
         function resetForm() {
             form.reset();
