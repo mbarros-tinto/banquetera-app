@@ -295,16 +295,8 @@
                             <input type="text" id="salon" name="salon" placeholder="Parque San Rafael, Casa Escondida, etc.">
                         </div>
 
-                        <div class="field full">
-                            <label for="comercial">Comercial asignado <span class="req">*</span></label>
-                            <select id="comercial" name="comercial" required>
-                                <option value="">Seleccionar…</option>
-                                <option value="Sofia Saavedra">Sofia Saavedra</option>
-                                <option value="Catalina Fernandez">Catalina Fernandez</option>
-                                <option value="Ignacio Rodriguez">Ignacio Rodriguez</option>
-                            </select>
-                            <div class="err">Comercial requerido</div>
-                        </div>
+                        <!-- Comercial asignado: fijo a Sofia Saavedra (campo oculto, no editable por el usuario) -->
+                        <input type="hidden" id="comercial" name="comercial" value="Sofia Saavedra">
 
                         <div class="field full">
                             <label>Plantilla del correo</label>
@@ -491,7 +483,9 @@
         function showFieldError(name, hasError) {
             const input = document.querySelector('[name="' + name + '"]');
             if (!input) return;
-            input.closest('.field').classList.toggle('has-error', hasError);
+            const field = input.closest('.field');
+            if (!field) return;
+            field.classList.toggle('has-error', hasError);
         }
 
         function clearFieldErrors() {
@@ -653,7 +647,7 @@
         }
 
         // Limpiar error de un campo cuando el user lo corrige
-        ['nombre','email','email2','telefono','comercial','fuenteOtro'].forEach(name => {
+        ['nombre','email','email2','telefono','fuenteOtro'].forEach(name => {
             const el = document.querySelector('[name="' + name + '"]');
             if (el) el.addEventListener('input', () => showFieldError(name, false));
             if (el) el.addEventListener('change', () => showFieldError(name, false));
