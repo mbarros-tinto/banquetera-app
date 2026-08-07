@@ -20,6 +20,11 @@
 
 ---
 
+## 2026-08-07 — Manuel (con Claude) — feature/bancocentral-form
+- Qué toqué: NUEVO `public/bancocentral.html` — wrapper iframe del formulario de inscripción + contrato del evento Banco Central 21-08-2026 (webapp Apps Script del repo local `steve-contratos-bc`). No toca `index.html` ni `nuevocliente.html`.
+- Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl/bancocentral
+- Notas: si el deployment del AS cambia, actualizar la URL del iframe Y la del link de respaldo (aparecen 2 veces). Página temporal: se puede borrar después del evento.
+
 ## 2026-06-10 — Sofía (con Claude) — fix/fuente-opciones-public
 - Qué toqué: `public/nuevocliente.html` — reemplazadas opciones del select "¿Por dónde llegaron a nosotros?" por las 6 nuevas acordadas. El PR anterior (#1) tocó el archivo en raíz (rama vieja); este corrige la ruta que sirve Cloudflare.
 - Deploy: pendiente de PR a main. Coordinar merge con Manuel.

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Inscripción y Contrato · Evento Banco Central — STEVE SpA</title>
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/drqkiohu8/image/upload/q_auto/f_auto/v1776383476/Icono_sin_fondo_wyxgzb.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #faf6f1;
+      overflow: hidden;
+    }
+    #marco {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #cargando {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: #faf6f1;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    #cargando .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e5ddd4;
+      border-top-color: #6b1f2e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #cargando p { color: #6b1f2e; font-size: 14px; font-weight: 600; }
+    #cargando .alt { font-size: 12px; color: #999; font-weight: 400; }
+    #cargando .alt a { color: #6b1f2e; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="cargando">
+    <div class="spinner"></div>
+    <p>Cargando formulario…</p>
+    <p class="alt">¿No carga? <a href="https://script.google.com/macros/s/AKfycbyaukr9jUC74xR7t6o-sRIHuAU2C7_0aqc3yyJqU94bsbmS1F9J5daWnoFNcMHuE8ehWQ/exec">Ábrelo directo aquí</a></p>
+  </div>
+  <iframe id="marco"
+          src="https://script.google.com/macros/s/AKfycbyaukr9jUC74xR7t6o-sRIHuAU2C7_0aqc3yyJqU94bsbmS1F9J5daWnoFNcMHuE8ehWQ/exec"
+          allow="fullscreen"
+          onload="document.getElementById('cargando').style.opacity = 0"></iframe>
+</body>
+</html>
