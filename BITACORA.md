@@ -20,6 +20,12 @@
 
 ---
 
+## 2026-10-08 — Manuel (con Claude) — feature/jubilar-nuevocliente
+- Qué toqué: `public/nuevocliente.html` — el formulario de leads se jubiló (Manuel: «nadie usa el form antiguo de cliente nuevo, jubílalo»). Queda una página corta que explica que los clientes nuevos se ingresan desde el CRM (Tinto → Clientes Potenciales → «＋ Nuevo Cliente») y lleva al CRM. Ya no le habla al backend `nuevocliente-backend`: no hay `BACKEND_URL` ni código.
+- Por qué: es parte de la jubilación de las planillas del CRM (todo en D1). Este formulario escribía directo en la planilla «Por Cerrar», sin pasar por el CRM.
+- Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl/nuevocliente
+- Notas para Sofía: si alguien tenía el link guardado, ahora ve el aviso con el botón al CRM. El portal (`index.html`) no enlazaba a este formulario.
+
 ## 2026-08-07 — Manuel (con Claude) — feature/bancocentral-form
 - Qué toqué: NUEVO `public/bancocentral.html` — wrapper iframe del formulario de inscripción + contrato del evento Banco Central 21-08-2026 (webapp Apps Script del repo local `steve-contratos-bc`). No toca `index.html` ni `nuevocliente.html`.
 - Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl/bancocentral
