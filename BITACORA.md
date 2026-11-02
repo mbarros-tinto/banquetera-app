@@ -20,6 +20,11 @@
 
 ---
 
+## 2026-11-02 — Manuel (con Claude) — feature/portal-sin-eventos
+- Qué toqué: `public/index.html` — borrados la sección de eventos con sus datos (`eventsData`, modal de documentos, funciones y estilos) y el botón «Instructivos y Reglas Tinto» («por ahora», Manuel). El wiki sigue en https://wiki.tintobanqueteria.cl; para volver a enlazarlo basta reponer el botón.
+- Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl
+- Notas para Sofía: los datos borrados siguen en el historial de git.
+
 ## 2026-11-02 — Manuel (con Claude) — feature/portal-bono-fotos
 - Qué toqué: `public/index.html` — «Bonos Fotos Tinto» pasa a «Bono Fotos» (también lo usan las graduaciones de VE) y sale el botón «Información Eventos» (Manuel: ya no se usa).
 - Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl
