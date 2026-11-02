@@ -20,6 +20,11 @@
 
 ---
 
+## 2026-11-02 — Manuel (con Claude) — feature/portal-bono-fotos
+- Qué toqué: `public/index.html` — «Bonos Fotos Tinto» pasa a «Bono Fotos» (también lo usan las graduaciones de VE) y sale el botón «Información Eventos» (Manuel: ya no se usa).
+- Deploy: merge a main → Cloudflare publica https://links.tintobanqueteria.cl
+- Notas para Sofía: el código y los datos de esa sección siguen en el archivo (`eventsSection`, `eventsData`), sin botón que los abra. Se pueden borrar si Manuel lo pide.
+
 ## 2026-10-08 — Manuel (con Claude) — feature/jubilar-nuevocliente
 - Qué toqué: `public/nuevocliente.html` — el formulario de leads se jubiló (Manuel: «nadie usa el form antiguo de cliente nuevo, jubílalo»). Queda una página corta que explica que los clientes nuevos se ingresan desde el CRM (Tinto → Clientes Potenciales → «＋ Nuevo Cliente») y lleva al CRM. Ya no le habla al backend `nuevocliente-backend`: no hay `BACKEND_URL` ni código.
 - Por qué: es parte de la jubilación de las planillas del CRM (todo en D1). Este formulario escribía directo en la planilla «Por Cerrar», sin pasar por el CRM.
